@@ -13,24 +13,31 @@ class OrderBook {
     std::vector<OrderQueue> asks = {};
     uint64_t highestBidsPrice = 0;
     uint64_t lowestAsksPrice = -1; // unsinged int will go maxint if -1 is put, so any sell will be lower
-
+    uint64_t max_ask_seen = 0;
+    uint64_t min_bid_seen = 1'000'000;
     ObjectPool& pool;
 
 public :
     OrderBook(ObjectPool& pool) : pool(pool) {
-            bids.resize(1000000);
-            asks.resize(1000000);
+            bids.resize(1'000'000);
+            asks.resize(1'000'000);
     }
     void addOrder(Order* order) {
             if (order->side == Side::BID) {
                 if (order->price > highestBidsPrice) {
                     highestBidsPrice = order->price;
                 }
+                if (order->price < min_bid_seen) {
+                    min_bid_seen = order->price;
+                }
                 bids[order->price].pushBack(order);
             }
             if (order->side == Side::ASK) {
                 if (order->price < lowestAsksPrice) {
                     lowestAsksPrice = order->price;
+                }
+                if (order->price > max_ask_seen) {
+                    max_ask_seen = order->price;
                 }
                 asks[order->price].pushBack(order);
             }
@@ -42,7 +49,7 @@ public :
                 if (highestBidsPrice == 0) {
                     return;
                 }
-                for (uint64_t i = highestBidsPrice - 1; i > 0; i--) {
+                for (uint64_t i = highestBidsPrice - 1; i > min_bid_seen; i--) {
                     if (!bids[i].isEmpty()) {
                         highestBidsPrice = i;
                         return;
@@ -55,7 +62,7 @@ public :
         if (order->side == Side::ASK) {
             if (asks[order->price].remove(order) && order->price == lowestAsksPrice) {
                 // Look for the next best ask
-                for (uint64_t i = lowestAsksPrice + 1; i < asks.size() ; i++) {
+                for (uint64_t i = lowestAsksPrice + 1; i < max_ask_seen ; i++) {
                     if (!asks[i].isEmpty()) {
                         lowestAsksPrice = i;
                         return;

@@ -12,8 +12,8 @@
 #include "OrderBook.hpp"
 
 void runBench() {
-    constexpr int num_orders = 1'000'000;
-    ObjectPool pool(num_orders + 10);
+    constexpr uint64_t num_orders = 1'000'000;
+    ObjectPool pool(1000);
     OrderBook book(pool);
     std::cout << "Preparing benchmark..." << std::endl;
     // start the timer
@@ -21,9 +21,9 @@ void runBench() {
     for (int i = 0; i < num_orders; i++) {
         Order* s = pool.acquire();
         if (i % 2 == 0) {
-            s->reset(i, 999'900, 10, Side::ASK);
+            s->reset(i, 100, 10, Side::ASK);
         } else {
-            s->reset(i, 999'900, 10, Side::BID);
+            s->reset(i, 100, 10, Side::BID);
         }
         book.matchOrder(s, true);
 
