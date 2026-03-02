@@ -54,7 +54,7 @@ void runBenchRandom() {
     std::mt19937 gen(rd());
 
     // Distribution des prix : entre 90 et 110
-    std::uniform_int_distribution<uint64_t> priceDist(90, 1000);
+    std::uniform_int_distribution<uint64_t> priceDist(90, 1'000'000);
     // Distribution des quantités : entre 1 et 100
     std::uniform_int_distribution<uint32_t> qtyDist(1, 500);
     // Distribution Side : 50/50
@@ -92,8 +92,48 @@ void runBenchRandom() {
     std::cout << "=========================" << std::endl;
 }
 
+
+void runSparseBenchmark() {
+    constexpr uint64_t num_iterations = 100'000;
+    ObjectPool pool(num_iterations * 2);
+    OrderBook book(pool);
+
+    std::cout << "--- Starting Sparse Price Benchmark (Bitset Test) ---" << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (uint64_t i = 0; i < num_iterations; ++i) {
+        // very low seller
+        Order* s1 = pool.acquire();
+        s1->reset(i, 10, 10, Side::ASK);
+        book.matchOrder(s1, true);
+
+        // execute the buy
+        Order* b1 = pool.acquire();
+        b1->reset(i + 1, 10, 10, Side::BID);
+        book.matchOrder(b1, true);
+
+        // very high seller
+        Order* s2 = pool.acquire();
+        s2->reset(i + 2, 900'000, 10, Side::ASK);
+        book.matchOrder(s2, true);
+
+        Order* b2 = pool.acquire();
+        b2->reset(i + 3, 900'000, 10, Side::BID);
+        book.matchOrder(b2, true);
+        // jump from 900 000 to empty (-1)
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+
+    std::cout << "Results for Sparse Benchmark:" << std::endl;
+    std::cout << "Total Time: " << diff.count() << " s" << std::endl;
+    std::cout << "Avg Latency per cycle: " << (diff.count() * 1e6) / num_iterations << " microseconds" << std::endl;
+}
+
 int main() {
     std::cout << "--- Starting High Speed Benchmark ---" << std::endl;
-    runBenchRandom();
+    runSparseBenchmark();
     return 0;
 }
