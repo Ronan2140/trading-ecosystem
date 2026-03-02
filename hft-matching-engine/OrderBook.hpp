@@ -11,6 +11,7 @@
 class OrderBook {
     std::vector<OrderQueue> bids = {};
     std::vector<OrderQueue> asks = {};
+
     uint64_t highestBidsPrice = 0;
     uint64_t lowestAsksPrice = -1; // unsinged int will go maxint if -1 is put, so any sell will be lower
     uint64_t max_ask_seen = 0;
@@ -42,6 +43,7 @@ public :
                 asks[order->price].pushBack(order);
             }
     }
+
     void cancelOrder(Order* order) {
         if (order->side == Side::BID) {
             if (bids[order->price].remove(order) && order->price == highestBidsPrice) {
