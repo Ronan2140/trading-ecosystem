@@ -69,6 +69,8 @@ Open a new terminal window at the root of the project and run the simulated trad
 python3 trader.py
 ```
 
+## 🇫🇷 Version Française
+
 # 📈 Moteur de Matching HFT & Connectivité Marché
 
 Ce projet est un moteur de matching d'ordres à ultra-faible latence (High-Frequency Trading) développé en C++ moderne. Il simule le cœur d'un exchange professionnel en se concentrant sur l'efficacité mémoire et une vitesse d'exécution extrême.
